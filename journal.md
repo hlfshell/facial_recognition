@@ -1,6 +1,6 @@
 # Journal
 
-## Initial Setup
+# Initial Setup
 
 At this point, I've only given a quick glance at the requirements of the project. I've created a pretty basic structure of the files for the pytorch project, but I suspect I'm missing something already. It seems that we will have a CNN detect the faces - based on the lessons already performed and how localized CNNs like YOLO or RCNN aren't yet discussed, I think they're going to have me write a method to do a sliding window for A CNN that simply detects faces.
 
@@ -15,3 +15,11 @@ I didn't realize that they didn't download the data from a public dataset, but r
 ---
 
 That was dead simple since Github provides a `.zip` download endpoint for the repos. The dataset is in the hundreds of megs so I definitely won't be adding it to this git repos so the script loader was a decent idea. `dataloader.sh` is done... onto the dataset pytorch class.
+
+## Dataset
+
+Now to create the pytorch dataset class. This will handle dataset loading for the training process, and handle transformations as well.
+
+---
+
+Initial outline of the dataset loader created. You can pass in the csv file of labels, the directory of the images, and set the transforms if they exist. I have to write the transformation function still.
