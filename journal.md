@@ -7,3 +7,11 @@ At this point, I've only given a quick glance at the requirements of the project
 As for the facial keypoint detection, I'm not sure yet how they intend for me to do that - either through a set of transforms ala classical computer visions techniques or a separate model just for the keypoints? I shall have to see.
 
 For now, I'll start the project out with something easy - a little script that downloads and sets up the training data.
+
+---
+
+I didn't realize that they didn't download the data from a public dataset, but rather provide the data inside the repos itself. I'll have to write a script that either clones the repos or downloads the prepared zip directly from Github, pulls the files I need, and then cleans the rest.
+
+---
+
+That was dead simple since Github provides a `.zip` download endpoint for the repos. The dataset is in the hundreds of megs so I definitely won't be adding it to this git repos so the script loader was a decent idea. `dataloader.sh` is done... onto the dataset pytorch class.
