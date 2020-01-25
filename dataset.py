@@ -35,7 +35,7 @@ class FacialKeypointsDataset(Dataset):
             image = image[:,:,0:3]
 
         # Grab the keypoints label
-        keypoints = self.labels.iloc[index, 1:].as_matrix()
+        keypoints = self.labels.iloc[index, 1:].to.numpy()
         # The 1: above is to ignore the filename label, which we don't need
         keypoints = keypoints.astype("float").reshape(-1, 2) # reshape our labels
 
@@ -55,4 +55,10 @@ class FacialKeypointsDataset(Dataset):
         self.transforms = []
 
     def transform(self, item):
-        pass
+        # transforms are simply called directly,
+        # so enumerat the transforms and call them
+        # in the order they were created
+        for _, transform in enumerate(self.transforms):
+            item = transform(item)
+
+        return item
