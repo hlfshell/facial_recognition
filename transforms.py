@@ -34,8 +34,8 @@ class Normalize(object):
     def __call__(self, item):
         # create copies of the image and keypoint labels
         # to work with
-        image = np.copy(item.image)
-        keypoints = np.copy(item.keypoints)
+        image = np.copy(item["image"])
+        keypoints = np.copy(item["keypoints"])
 
         # Convert to grayscale
         image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -62,12 +62,12 @@ class Rescale(object):
         self.output_size = output_size
 
     def __call__(self, item):
-        resized_image = cv2.resize(item.image, self.output_size)
+        resized_image = cv2.resize(item["image"], self.output_size)
 
-        h, w = item.image.shape[:2] #Might be grayscale, might be RGB, so grab first two columns
+        h, w = item["image"].shape[:2] #Might be grayscale, might be RGB, so grab first two columns
         new_h, new_w = self.output_size
 
-        resized_keypoints = item.keypoints * [new_w / w, new_h / h]
+        resized_keypoints = item["keypoints"] * [new_w / w, new_h / h]
 
         return { "image": resized_image, "keypoints": resized_keypoints }
 
@@ -80,15 +80,15 @@ class RandomCrop(object):
         self.output_size = output_size
 
     def __call__(self, item):
-        h, w = item.image.shape[:2]
+        h, w = item["image"].shape[:2]
         new_h, new_w = self.output_size
 
         top = np.random.randint(0, h - new_h)
         left = np.random.randint(0, w - new_w)
 
-        image = item.image[top: top + new_h, left: left + new_w]
+        image = item["image"][top: top + new_h, left: left + new_w]
 
-        keypoints = item.keypoints - [left, top]
+        keypoints = item["keypoints"] - [left, top]
 
         return { 'image': image, 'keypoints': keypoints }
         
@@ -113,4 +113,15 @@ class Rotation(object):
 class ToTensor(object):
 
     def __call__(self, item):
-        pass
+        image, keypoints = item["image"], item["keypoints"]
+        
+        # If the image has no grayscale channel, add one
+        if len(image.shape) == 2:
+            image = image.reshape(image.shape[0], image.shape[1], 1)
+
+        #Swap color axis. Numpy is the opposite of torch
+        # numpy images: H x W x C
+        # torch images: C X H X W
+        image = image.transpose((2, 0, 1))
+
+        return { "image": torch.from_numpy(image), "keypoints": torch.from_numpy(keypoints) }
