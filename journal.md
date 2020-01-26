@@ -63,3 +63,9 @@ Very similar to the CNN, which makes sense given the similar sliding / convolvin
 First run through of the model is complete - stopping point for the night as it's 1 am. I'll see if my size calculations and assumptions are correct tomorrow when I put this through its paces with a quick image load.
 
 I set all of the dropout to 0.5 to begin as it's a good default. I couldn't find a confirmed way to change the dropout outside of the initialization of the layer - I was hoping to create helper functions to allow quicker experimentation with it. I'll go back and make that settable as a quick quality of life improvement next.
+
+---
+
+Quick change on the organization of the model construction - I do the building in the forward instead of the constructor. The functional tensors like `nn.functional.relu` are not class based and expect a tensor, so my building method was incorrect.
+
+At this point I've adjusted the buildout, and have the model building. I'm trying to force the dataset loader to load a singular image so I can pass it through the net and ensure that the net is constructed properly and the output shape of each layer is correct. Unfortunately that means I have to go back through `dataset.py` and `transforms.py` to fix minor bugs and write out the yet to be completed `ToTensor` transform.
