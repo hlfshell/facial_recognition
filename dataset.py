@@ -27,7 +27,7 @@ class FacialKeypointsDataset(Dataset):
         filename = self.labels.iloc[index, 0]
         filepath = os.path.join(self.dataset_directory, filename)
 
-        image = mp.imread(filepath)
+        image = mpimg.imread(filepath)
 
         # Protect against an alpha channel being present -
         # 3 channel only
@@ -35,12 +35,12 @@ class FacialKeypointsDataset(Dataset):
             image = image[:,:,0:3]
 
         # Grab the keypoints label
-        keypoints = self.labels.iloc[index, 1:].to.numpy()
+        keypoints = self.labels.iloc[index, 1:].to_numpy()
         # The 1: above is to ignore the filename label, which we don't need
         keypoints = keypoints.astype("float").reshape(-1, 2) # reshape our labels
 
         # create the return value to have the image and the keypoints
-        item = { image: image, keypoints: keypoints }
+        item = { "image": image, "keypoints": keypoints }
 
         if len(self.transforms) > 0:
             item = self.transform(item)
