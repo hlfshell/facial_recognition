@@ -16,7 +16,7 @@ I didn't realize that they didn't download the data from a public dataset, but r
 
 That was dead simple since Github provides a `.zip` download endpoint for the repos. The dataset is in the hundreds of megs so I definitely won't be adding it to this git repos so the script loader was a decent idea. `dataloader.sh` is done... onto the dataset pytorch class.
 
-## Dataset
+# Dataset
 
 Now to create the pytorch dataset class. This will handle dataset loading for the training process, and handle transformations as well.
 
@@ -34,7 +34,8 @@ I've finished implementing each transform, with a TODO for my rotational one. I 
 
 If I do need all keypoints, I will possibly just drop the random crop entirely. It would mean that if I did implement the rotation, I need to ensure that the rotation shrinks the image to contain all keypoints within the desired output size still.
 
----
+
+# Model
 
 With the transformations made and the dataloader made, I'm going to move onto starting to make a basic NN.
 
@@ -69,3 +70,57 @@ I set all of the dropout to 0.5 to begin as it's a good default. I couldn't find
 Quick change on the organization of the model construction - I do the building in the forward instead of the constructor. The functional tensors like `nn.functional.relu` are not class based and expect a tensor, so my building method was incorrect.
 
 At this point I've adjusted the buildout, and have the model building. I'm trying to force the dataset loader to load a singular image so I can pass it through the net and ensure that the net is constructed properly and the output shape of each layer is correct. Unfortunately that means I have to go back through `dataset.py` and `transforms.py` to fix minor bugs and write out the yet to be completed `ToTensor` transform.
+
+---
+
+Took some debugging, but I got a printout of the shape of the model and the flow seems to be fine.
+
+I used
+
+```
+test = FacialNetwork()
+print(test)
+
+import numpy as np
+import torch
+
+x = np.zeros((1, 1, 224, 224))
+x = torch.from_numpy(x)
+print("input = ", x.shape)
+x = x.float()
+x = test.forward(x)
+print("output = ", x.shape)
+```
+..and some additional `.shape` printouts in the model `forward` function itself to get the model shape. Note the `x.float()` line, which is what was giving me the most trouble. I tried doing a pull from the dataset, but it always pulled a single item which caused shaping issues.
+
+The output from the debugging/shape printout is:
+
+```
+FacialNetwork(
+  (pool): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  (dropout): Dropout(p=0.5, inplace=False)
+  (conv_1): Conv2d(1, 32, kernel_size=(5, 5), stride=(1, 1))
+  (conv_2): Conv2d(32, 64, kernel_size=(5, 5), stride=(1, 1))
+  (conv_3): Conv2d(64, 128, kernel_size=(5, 5), stride=(1, 1))
+  (conv_4): Conv2d(128, 256, kernel_size=(5, 5), stride=(1, 1))
+  (linear_1): Linear(in_features=25600, out_features=6400, bias=True)
+  (linear_2): Linear(in_features=6400, out_features=1600, bias=True)
+  (linear_3): Linear(in_features=1600, out_features=400, bias=True)
+  (output_layer): Linear(in_features=400, out_features=136, bias=True)
+)
+
+input = torch.Size([1, 1, 224, 224])
+c1 block out = torch.Size([1, 32, 110, 110])
+c2 block out = torch.Size([1, 64, 53, 53])
+c3 block out = torch.Size([1, 128, 24, 24])
+c4 block out = torch.Size([1, 256, 10, 10])
+flatten out = torch.Size([1, 25600])
+l1 block out = torch.Size([1, 6400])
+l2 block out = torch.Size([1, 1600])
+l3 block out = torch.Size([1, 400])
+output = torch.Size([1, 136])
+```
+
+...which confirms my earlier calculations and fits all my expectations. Great!
+
+At this point I cleared up the print statements and am going to move onto building the loader and trainer.
