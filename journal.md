@@ -124,3 +124,9 @@ output = torch.Size([1, 136])
 ...which confirms my earlier calculations and fits all my expectations. Great!
 
 At this point I cleared up the print statements and am going to move onto building the loader and trainer.
+
+---
+
+OK, first draft of the trainer is built. It doesn't actually save the model yet, so I have to take care of that. I need to also move this code from my laptop to the dekstop, which has a GTX1080 - a world of difference in training speed.
+
+I also need to write code that converts the keypoints in the otuput tensor to x,y coordinates, and then draw them (and/or the labeled ones as well) onto an image for debugging and performance checking.
