@@ -140,4 +140,4 @@ for epoch in range(args.epochs):
 filename = 'model-{date:%Y-%m-%d_%H:%M:%S}.pt'.format( date=datetime.datetime.now())
 model_path = os.path.join(args.output_dir, filename)
 torch.save(model.state_dict(), model_path)
-print("Final trained model saved to %".format(model_path))
+print("Final trained model saved to %s".format(model_path))
