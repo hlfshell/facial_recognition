@@ -55,7 +55,7 @@ class FacialNetwork(nn.Module):
 
         # First, we'll need a pooling and dropout layer that
         # will be reused
-        self.pool = pool = nn.MaxPool2d(kernel_size = 2, stride = 2)
+        self.pool = nn.MaxPool2d(kernel_size = 2, stride = 2)
         self.dropout = nn.Dropout(p = 0.5)
 
         # Now create the four convolutional layers.
