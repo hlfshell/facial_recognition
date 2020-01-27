@@ -69,7 +69,13 @@ test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle
 # Create our model
 
 model = FacialNetwork()
+
 # TODO - load up model snapshot here
+
+# If a GPU is available, use it
+if torch.cuda.is_available():
+    model.cuda()
+
 model.train()
 
 # Create our optimizer and criterion for training
@@ -87,6 +93,11 @@ for epoch in range(args.epochs):
     for batch_i, data in enumerate(training_dataloader):
         images = data["image"]
         keypoints = data["keypoints"]
+
+        # If using the gpu, add our tensors to its memory
+        if torch.cuda.is_available():
+            images.cuda()
+            keypoints.cuda()
 
         # We need to flatten the keypoints - we're given them
         # as a batch of 68 points, which are in turn 2 points each.
