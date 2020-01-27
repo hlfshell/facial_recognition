@@ -24,6 +24,7 @@ Optional:
 '''
 import argparse
 import os
+import datetime
 import torch
 from torch.utils.data import DataLoader
 
@@ -41,10 +42,12 @@ parser.add_argument("--test_data", help = "the directory location of the test im
 parser.add_argument("--test_labels", help = "the file location of the test labels csv", required = True)
 
 parser.add_argument("--learning_rate", help = "the learning rate to use while training", default = 0.001)
-parser.add_argument("--batch_size", help = "the training batch size", default = 20)
-parser.add_argument("--epochs", help = "the number of epochs to train for", default = 5)
+parser.add_argument("--batch_size", help = "the training batch size", default = 20, type = int)
+parser.add_argument("--epochs", help = "the number of epochs to train for", default = 5, type = int)
 
 parser.add_argument("--output_dir", help = "the desired directory to save models to", default = os.getcwd())
+
+parser.add_argument("--load_model", help = "a pytorch model to start training from - useful for resuming training")
 
 args = parser.parse_args()
 
@@ -70,7 +73,9 @@ test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle
 
 model = FacialNetwork()
 
-# TODO - load up model snapshot here
+# If a starting model is specified, load it here
+if args.load_model is not None:
+    model.load_state_dict(torch.load(args.load_model))
 
 # If a GPU is available, use it
 if torch.cuda.is_available():
@@ -129,3 +134,10 @@ for epoch in range(args.epochs):
         if batch_i % 10 == 9:    # print every 10 batches
             print('Epoch: {}, Batch: {}, Avg. Loss: {}'.format(epoch + 1, batch_i+1, running_loss/1000))
             running_loss = 0.0
+
+
+# Save the model at this point
+filename = 'model-{date:%Y-%m-%d_%H:%M:%S}.pt'.format( date=datetime.datetime.now())
+model_path = os.path.join(args.output_dir, filename)
+torch.save(model.state_dict(), model_path)
+print("Final trained model saved to %".format(model_path))
