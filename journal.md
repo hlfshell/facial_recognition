@@ -136,3 +136,14 @@ I also need to write code that converts the keypoints in the otuput tensor to x,
 The CUDA version on the desktop is out of debate, necesitating a full session of debugging in the future to try and figure out how to do the update, since the standard instructions don't work. Either that or I'll have to finally figure out how to push my training over to docker with the nvidia-docker plugin so I can get around all of the headache that is CUDA and tensorflow versioning.
 
 In the meantime, I ran the training on my CPU - it did not take long, only about an hour for 10 epochs with a batch size of 20. Loss started at ~ 0.002 and plateued ~ 0.00034 within the 2nd epoch. I'll have to code up a quick cli script to take in an image, grab the faces, run the network on it, and then mark out the predicted keypoints to see how this did. I suspect the network overfit and isn't going to generalize well - so the next step is adding in the test set to track model progression, and probably code in an early stopping mechanism based on that as well.
+
+---
+
+Haven't had time to look into the CUDA bit on the computer. With only a free hour to spare, I looked into just getting the training code updated to run against the test dataset every so often, saving the model and reporting the average test loss as well. This would signify overfitting easily and allow me to grab an older model prior to the model overfitting.
+
+That code is done, albeit messy and needs a bit more re-organization. I will note that I ran into trouble with running out of memory, until I realized a minute or two later that I was doing a `running_loss` for the test dataset with a simple appending of the `loss`. Thankfully I recently read an article about PyTorch optimization that mentioned that `loss` contains the entire graph, where `loss.item()` is far more light weight. Sure enough, that fixed it right away - an easy win.
+
+---
+
+Training ran for 5 epochs, and in epoch 2 we overfit. I will definitely need to work on the transformations to expand upon my data augmentation. There is the original rotation transformaton I proposed. Blurring, noise, mirroring, and playing with the contrast will likely be good, easy candidates too.
+

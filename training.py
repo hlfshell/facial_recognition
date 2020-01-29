@@ -87,9 +87,62 @@ model.train()
 optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
 criterion = torch.nn.SmoothL1Loss()
 
+# run_against_test will be used to periodically 
+# find out how the model is doing generalizing,
+# From this we can determine if we begin overfitting
+def run_against_test(model):
+    # Set the model into evaluation mode to disable dropout and the like
+    model.eval()
+
+    total_batches = len(test_dataloader)
+    total_loss = 0
+
+    for _, data in enumerate(test_dataloader):
+        images = data["image"]
+        keypoints = data["keypoints"]
+
+        loss = run_against_model(model, images, keypoints)
+
+        total_loss += loss.item()
+
+    # Set the model back into training mode
+    model.train()
+
+    return total_loss / total_batches
+
+# metric trackers
+best_loss = 1.0
+best_epoch = -1
+
 # And finally the core training loop
 
 print("Beginning training!")
+
+# This is pulled out so we can utilize the same code
+# against test and training dataloaders
+def run_against_model(model, images, keypoints):
+    # If using the gpu, add our tensors to its memory
+    if torch.cuda.is_available():
+        images.cuda()
+        keypoints.cuda()
+
+    # We need to flatten the keypoints - we're given them
+    # as a batch of 68 points, which are in turn 2 points each.
+    # Our network outputs a flat tensor of 136 total outputs, so
+    # we need to match that
+    keypoints = keypoints.view(keypoints.size(0), -1)
+
+    # Convert variables to floats for regression loss
+    keypoints = keypoints.type(torch.FloatTensor)
+    images = images.type(torch.FloatTensor)
+
+    # Perform a forward pass with the model
+    output = model(images)
+
+    # Calculate our loss between expected / generated keypoints
+    loss = criterion(output, keypoints)
+
+    return loss
 
 for epoch in range(args.epochs):
 
@@ -99,26 +152,7 @@ for epoch in range(args.epochs):
         images = data["image"]
         keypoints = data["keypoints"]
 
-        # If using the gpu, add our tensors to its memory
-        if torch.cuda.is_available():
-            images.cuda()
-            keypoints.cuda()
-
-        # We need to flatten the keypoints - we're given them
-        # as a batch of 68 points, which are in turn 2 points each.
-        # Our network outputs a flat tensor of 136 total outputs, so
-        # we need to match that
-        keypoints = keypoints.view(keypoints.size(0), -1)
-
-        # Convert variables to floats for regression loss
-        keypoints = keypoints.type(torch.FloatTensor)
-        images = images.type(torch.FloatTensor)
-
-        # Perform a forward pass with the model
-        output = model(images)
-
-        # Calculate our loss between expected / generated keypoints
-        loss = criterion(output, keypoints)
+        loss = run_against_model(model, images, keypoints)
 
         # Zero weight gradients
         optimizer.zero_grad()
@@ -131,13 +165,33 @@ for epoch in range(args.epochs):
 
         # Statistics book keeping for progress output
         running_loss += loss.item()
-        if batch_i % 10 == 9:    # print every 10 batches
-            print('Epoch: {}, Batch: {}, Avg. Loss: {}'.format(epoch + 1, batch_i+1, running_loss/1000))
+        if batch_i % 10 == 9 or batch_i == 0:    # Print every 10 batches
+            # Every 20 batches, run the current model on the test set
+            if batch_i % 30 == 29 or batch_i == 0:
+                test_loss = run_against_test(model)
+
+                # If the accuracy has increased, snapshot the model
+                if best_loss > test_loss:
+                    best_epoch = batch_i
+                    best_loss = test_loss
+
+                    filename = 'model-{epoch}-{date:%Y-%m-%d_%H:%M:%S}.pt'.format(epoch = batch_i,  date = datetime.datetime.now())
+                    model_path = os.path.join(args.output_dir, filename)
+                    torch.save(model.state_dict(), model_path)
+                    print('New test loss low -  trained model saved to {0}'.format(model_path))
+
+                    print('Epoch: {}, Batch: {}, Avg. Loss: {}, Test Avg. Loss: {}'.format(epoch + 1, batch_i+1, running_loss/1000, test_loss))
+            else:
+                print('Epoch: {}, Batch: {}, Avg. Loss: {}'.format(epoch + 1, batch_i+1, running_loss/1000))
+            
             running_loss = 0.0
 
+# Now that we've finished training, run the final model through the accuracy test again
+loss = run_against_test(model)
+print("Final model loss is {}".format(loss))
 
 # Save the model at this point
-filename = 'model-{date:%Y-%m-%d_%H:%M:%S}.pt'.format( date=datetime.datetime.now())
+filename = 'model-{date:%Y-%m-%d_%H:%M:%S}-final.pt'.format(date = datetime.datetime.now())
 model_path = os.path.join(args.output_dir, filename)
 torch.save(model.state_dict(), model_path)
-print('Final trained model saved to {0}'.format(model_path))
+print('Final trained model saved to {}'.format(model_path))
