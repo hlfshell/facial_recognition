@@ -127,6 +127,8 @@ At this point I cleared up the print statements and am going to move onto buildi
 
 ---
 
+# Training
+
 OK, first draft of the trainer is built. It doesn't actually save the model yet, so I have to take care of that. I need to also move this code from my laptop to the dekstop, which has a GTX1080 - a world of difference in training speed.
 
 I also need to write code that converts the keypoints in the otuput tensor to x,y coordinates, and then draw them (and/or the labeled ones as well) onto an image for debugging and performance checking.
@@ -147,3 +149,8 @@ That code is done, albeit messy and needs a bit more re-organization. I will not
 
 Training ran for 5 epochs, and in epoch 2 we overfit. I will definitely need to work on the transformations to expand upon my data augmentation. There is the original rotation transformaton I proposed. Blurring, noise, mirroring, and playing with the contrast will likely be good, easy candidates too.
 
+# Improving training
+
+As I said before, I have three possible areas to work on. The first is to get the visualization from output tensor to facial x/y coordinates to place onto the input face. This has to be done eventually to call the project complete. The other two tasks are directly related to improving performance of the network - creating better transformers, and getting my GPU computer capable of running the latest CUDA / Pytorch libraries. The latter would open up such an increase in training time that I could write a module that would be able to run several model designs and hyperparameters at once. The former is likely required to see much success with our small dataset.
+
+For right this moment, I'm going to work on the data trasnformations. I'm going to create a script that demos transformatons first, so I can check my work as I create the transformations.
