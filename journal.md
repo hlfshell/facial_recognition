@@ -154,3 +154,7 @@ Training ran for 5 epochs, and in epoch 2 we overfit. I will definitely need to 
 As I said before, I have three possible areas to work on. The first is to get the visualization from output tensor to facial x/y coordinates to place onto the input face. This has to be done eventually to call the project complete. The other two tasks are directly related to improving performance of the network - creating better transformers, and getting my GPU computer capable of running the latest CUDA / Pytorch libraries. The latter would open up such an increase in training time that I could write a module that would be able to run several model designs and hyperparameters at once. The former is likely required to see much success with our small dataset.
 
 For right this moment, I'm going to work on the data trasnformations. I'm going to create a script that demos transformatons first, so I can check my work as I create the transformations.
+
+---
+
+Transform testing tool is done - pass it a transform and it'll output a file with a comparison of before/after of the transform on a random test dataset image. Now to work on the transforms themselves (and sneak in some effort on fixing that CUDA problem).
