@@ -113,12 +113,44 @@ class RandomBlur(object):
 
     def __call__(self, item):
         image = item["image"]
-        blur_size = randint(1, 5)
-        blurred = cv2.blur(image, (blur_size, blur_size))
+        blur_size = randint(0, 5)
+        if blur_size != 0:
+            blurred = cv2.blur(image, (blur_size, blur_size))
+            return { "image": blurred, "keypoints": item["keypoints"] }
+        else:
+            return item
+    
+# RandomBrightness transform
+# Performs a random brightness/darkening of
+# an image
+class RandomBrightness(object):
+    
+    '''
+        def adjust_gamma(image, gamma=1.0):
+            # build a lookup table mapping the pixel values [0, 255] to
+            # their adjusted gamma values
+            invGamma = 1.0 / gamma
+            table = np.array([((i / 255.0) ** invGamma) * 255
+                for i in np.arange(0, 256)]).astype("uint8")
+        
+            # apply gamma correction using the lookup table
+            return cv2.LUT(image, table)
 
-        return { "image": blurred, "keypoints": item["keypoints"] }
 
+        
+    '''
 
+    def __call__(self, item):
+        image = item["image"]
+
+        adjustment = randint(5, 35) / 10
+        invGamma = 1.0 / adjustment
+        table = np.array([((i / 255.0) ** invGamma) * 255
+            for i in np.arange(0,256)]).astype("uint8")
+
+        result = cv2.LUT(image, table)
+
+        return { "image": result, "keypoints": item["keypoints"] }
 
 # ToTensor transform 
 # As mentioned above, ToTensor converts an image described

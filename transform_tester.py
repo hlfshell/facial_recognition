@@ -37,6 +37,8 @@ elif args.transformer == "rotation":
     transformer = transforms.RandomRotation(90, image_shape)
 elif args.transformer == "blur":
     transformer = transforms.RandomBlur()
+elif args.transformer == "brightness":
+    transformer = transforms.RandomBrightness()
 elif args.transformer == "normalize":
     transformer = transforms.Normalize()
 else:
