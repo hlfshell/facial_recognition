@@ -158,3 +158,23 @@ For right this moment, I'm going to work on the data trasnformations. I'm going 
 ---
 
 Transform testing tool is done - pass it a transform and it'll output a file with a comparison of before/after of the transform on a random test dataset image. Now to work on the transforms themselves (and sneak in some effort on fixing that CUDA problem).
+
+---
+
+Current plan of attack for the transformations: make some easy transformations, and then target the harder rotation transformations.
+
+The easier ones will be:
+
+1. Random blur
+2. Randomly lighten/darken the image
+3. Random noise introduction
+4. A better random crop (small boxes throughout the image, instead of huge portions of the image)
+5. Random Mirror - 50/50 shot of mirroring the whole image
+
+Finally, the hardest will be RandomRotation - this will rotate the image, but do so in a way that maintains the presence of all keypoints within hte image. How I plan on doing that at the moment is:
+
+1. Determine the maximum rectangle size presented by the upperleft most and bottom right most keypoints
+2. Pick a random rotation angle within range. Calculate the new keypoint positions. I suspect this part will be hard - I'll have to either find or derive a formula for an x/y coordinate getting rotated in an image coordinate system where top left is (0,0)
+3. If the keypoints would be outside the image, scale the image to fit its current bounds.
+
+Onto the easy ones to warm up.
