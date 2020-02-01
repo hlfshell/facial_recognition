@@ -24,7 +24,7 @@ import torch
 from torchvision import utils, transforms
 import cv2
 import numpy as np
-from random import randint
+from random import randint, uniform
 
 # Normalize transform 
 # Converts the image to grayscale and normalizes the data,
@@ -125,21 +125,6 @@ class RandomBlur(object):
 # an image
 class RandomBrightness(object):
     
-    '''
-        def adjust_gamma(image, gamma=1.0):
-            # build a lookup table mapping the pixel values [0, 255] to
-            # their adjusted gamma values
-            invGamma = 1.0 / gamma
-            table = np.array([((i / 255.0) ** invGamma) * 255
-                for i in np.arange(0, 256)]).astype("uint8")
-        
-            # apply gamma correction using the lookup table
-            return cv2.LUT(image, table)
-
-
-        
-    '''
-
     def __call__(self, item):
         image = item["image"]
 
@@ -151,6 +136,29 @@ class RandomBrightness(object):
         result = cv2.LUT(image, table)
 
         return { "image": result, "keypoints": item["keypoints"] }
+
+# RandomNoise transform
+# This introduces "salt and pepper" style noise into
+# an image
+class RandomNoise(object):
+
+    def __call__(self, item):
+        image = item["image"]
+        out = np.copy(image)
+        # out.flags.writeable = True
+
+        salt_vs_pepper = uniform(0, 0.5)
+        noise_amount = uniform(0, 0.1)
+
+        salt = np.ceil(noise_amount * image.size * salt_vs_pepper)
+        coords = [np.random.randint(0, i - 1, int(salt)) for i in image.shape]
+        out[coords] = 255
+
+        pepper = np.ceil(noise_amount * image.size * (1 - salt_vs_pepper))
+        coords = [np.random.randint(0, i- 1, int(pepper)) for i in image.shape]
+        out[coords] = 0
+
+        return { "image": out, "keypoints": item["keypoints"] }
 
 # ToTensor transform 
 # As mentioned above, ToTensor converts an image described
