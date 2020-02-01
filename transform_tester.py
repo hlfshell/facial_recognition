@@ -31,10 +31,12 @@ transformer = None
 
 if args.transformer == "rescale":
     transformer = transforms.Rescale(image_shape)
-elif args.transformer == "randomcrop":
+elif args.transformer == "crop":
     transformer = transforms.RandomCrop((50, 50))
 elif args.transformer == "rotation":
-    transformer = transforms.Rotation(90, image_shape)
+    transformer = transforms.RandomRotation(90, image_shape)
+elif args.transformer == "blur":
+    transformer = transforms.RandomBlur()
 elif args.transformer == "normalize":
     transformer = transforms.Normalize()
 else:

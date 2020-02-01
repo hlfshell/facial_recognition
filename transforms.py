@@ -24,6 +24,7 @@ import torch
 from torchvision import utils, transforms
 import cv2
 import numpy as np
+from random import randint
 
 # Normalize transform 
 # Converts the image to grayscale and normalizes the data,
@@ -93,10 +94,10 @@ class RandomCrop(object):
         return { 'image': image, 'keypoints': keypoints }
         
 
-# Rotation transform 
+# RandomRotation transform 
 # Randomly rotates an image a set amount
 # clockwise or counter clockwise
-class Rotation(object):
+class RandomRotation(object):
 
     def __init__(self, max_rotation, output_size):
         self.max_rotation = max_rotation
@@ -105,6 +106,19 @@ class Rotation(object):
     def __call__(self, item):
         # TODO
         pass
+
+# RandomBlur transform
+# Performs a random strength blur on the image 
+class RandomBlur(object):
+
+    def __call__(self, item):
+        image = item["image"]
+        blur_size = randint(1, 5)
+        blurred = cv2.blur(image, (blur_size, blur_size))
+
+        return { "image": blurred, "keypoints": item["keypoints"] }
+
+
 
 # ToTensor transform 
 # As mentioned above, ToTensor converts an image described
