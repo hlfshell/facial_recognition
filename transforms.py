@@ -101,15 +101,14 @@ class RandomCrop(object):
 # clockwise or counter clockwise
 class RandomRotation(object):
 
-    def __init__(self, max_rotation, output_size):
-        self.max_rotation = max_rotation
-        self.output_size = output_size
+    def __init__(self, max_rotation_angle=90):
+        self.max_rotation_angle = max_rotation_angle
 
     def __call__(self, item):
         image = item["image"]
         keypoints = item["keypoints"]
 
-        angle = randint(-90, 90)
+        angle = randint(-self.max_rotation_angle, self.max_rotation_angle)
         
         # Rotate the image. By using the _bound, we guarentee
         # that the rotation won't cut out any keypoints.
