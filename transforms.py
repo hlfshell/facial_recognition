@@ -25,6 +25,8 @@ from torchvision import utils, transforms
 import cv2
 import numpy as np
 from random import randint, uniform
+import imutils
+import math
 
 # Normalize transform 
 # Converts the image to grayscale and normalizes the data,
@@ -104,8 +106,60 @@ class RandomRotation(object):
         self.output_size = output_size
 
     def __call__(self, item):
-        # TODO
-        pass
+        image = item["image"]
+        keypoints = item["keypoints"]
+
+        angle = randint(-90, 90)
+        
+        # Rotate the image. By using the _bound, we guarentee
+        # that the rotation won't cut out any keypoints.
+        rotated = imutils.rotate_bound(image, angle)
+        
+        # We rotate daround the center point of the image
+        height, width, _ = image.shape
+        center = (width // 2, height // 2) # // == integer division
+
+        # Create a new keypoints arr to hold results
+        rotated_keypoints = np.zeros_like(keypoints)
+
+        # Go through each individual keypoint to rotate it.
+        # The rotation code is copied with minor adjustment,
+        # from the imutils rotate_bound function. We can't
+        # just use the keypoints array as each coordinate is
+        # rotated on a different reference frame.
+        for index, keypoint in enumerate(keypoints):
+            # opencv calculates standard transformation matrix
+            M = cv2.getRotationMatrix2D((center[0], center[1]), -angle, 1.0)
+            # The 1.0 above is scale - we're not looking to change the scale
+            # of the image outside of the rotation. The -angle is because
+            # the rotation was basckwards when I first wrote this - not
+            # entirely sure why the -angle is needed beyond this.
+            # Grab  the rotation components of the matrix)
+
+            # Create the cos / sin matricies
+            cos = np.abs(M[0, 0])
+            sin = np.abs(M[0, 1])
+
+            # This computes the new width/height of the image that
+            # rotate_bound would have adjusted the image so we can
+            # make the same adjustment on our coordinates
+            nW = int((height * sin) + (width * cos))
+            nH = int((height * cos) + (width * sin))
+
+            # Here we use the translation to adjust our point
+            M[0, 2] += (nW / 2) - center[0]
+            M[1, 2] += (nH / 2) - center[1]
+
+            # Prepare the vector to be transformed - 1 is for scaling
+            v = [keypoint[0],keypoint[1],1]
+
+            # Perform the actual rotation and return the image
+            calculated = np.dot(M,v)
+
+            # Assign
+            rotated_keypoints[index] = (calculated[0], calculated[1])
+
+        return { "image": rotated, "keypoints": rotated_keypoints }
 
 # RandomBlur transform
 # Performs a random strength blur on the image 

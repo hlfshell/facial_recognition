@@ -178,3 +178,11 @@ Finally, the hardest will be RandomRotation - this will rotate the image, but do
 3. If the keypoints would be outside the image, scale the image to fit its current bounds.
 
 Onto the easy ones to warm up.
+
+---
+
+I ended up dropping the idea for the small scale random crop because, again, I didn't want to lose information that would determine the keypoint.
+
+All of the transformations came together really easily, save the rotation. I was able to figure it out by looking at the source code for the imutils `rotate_bound` function and adjusting it.
+
+With the transformations done, it's now time to focus my energy on fixing CUDA on my GPU-equipped desktop, write out an execution tester for trained models (given an image, apply and draw keypoints, etc), and improve the trainer. If I can get the GPU equipped computer, I'll probably test many configurations in a single script.
