@@ -64,9 +64,10 @@ brightness = transforms.RandomBrightness()
 noise = transforms.RandomNoise()
 flip = transforms.RandomFlip()
 toTensor = transforms.ToTensor()
+rotate = transforms.RandomRotation()
 
 # Training dataset and loader
-training_dataset = FacialKeypointsDataset(args.training_data, args.training_labels, transforms=[rescale, blur, brightness, noise, flip, normalize, toTensor])
+training_dataset = FacialKeypointsDataset(args.training_data, args.training_labels, transforms=[rescale, rotate, blur, brightness, noise, flip, normalize, toTensor])
 training_dataloader = DataLoader(training_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
 
 # Testing dataset and loader
