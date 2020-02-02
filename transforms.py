@@ -160,6 +160,28 @@ class RandomNoise(object):
 
         return { "image": out, "keypoints": item["keypoints"] }
 
+# RandomFlip will possibly mirror a face in the horizontal
+# axis - a 50/50 shot of it occuring.
+class RandomFlip(object):
+
+    def __call__(self, item):
+        # 50/50 shot we do nothing at all:
+        if randint(0, 1) == 0:
+            return item
+
+        image = item["image"]
+        keypoints = item["keypoints"]
+        flipped = cv2.flip(image, 1)
+
+        # Now go through the x/y of the keypoints - the y will never
+        # change, but the x will now be width-x instead of x.
+
+        _, w, _ = image.shape
+        for index, keypoint in enumerate(keypoints):
+            keypoints[index] = (w - keypoint[0], keypoint[1])
+        
+        return { "image": flipped, "keypoints": keypoints}
+
 # ToTensor transform 
 # As mentioned above, ToTensor converts an image described
 # in a numpy array to a pytorch image describe via pytorch

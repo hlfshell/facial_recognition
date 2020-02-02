@@ -41,6 +41,8 @@ elif args.transformer == "brightness":
     transformer = transforms.RandomBrightness()
 elif args.transformer == "noise":
     transformer = transforms.RandomNoise()
+elif args.transformer == "flip":
+    transformer = transforms.RandomFlip()
 elif args.transformer == "normalize":
     transformer = transforms.Normalize()
 else:
