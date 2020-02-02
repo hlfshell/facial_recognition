@@ -29,7 +29,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from dataset import FacialKeypointsDataset
-from transforms import Rescale, Normalize, ToTensor
+import transforms
 from model import FacialNetwork
 
 # First, process all the possible arguments
@@ -57,12 +57,16 @@ input_shape = (224, 224)
 # Alright, we have our cli taken care of - now to create the dataset loaders
 
 # Prepare transformers
-rescale = Rescale(input_shape)
-normalize = Normalize()
-toTensor = ToTensor()
+rescale = transforms.Rescale(input_shape)
+normalize = transforms.Normalize()
+blur = transforms.RandomBlur()
+brightness = transforms.RandomBrightness()
+noise = transforms.RandomNoise()
+flip = transforms.RandomFlip()
+toTensor = transforms.ToTensor()
 
 # Training dataset and loader
-training_dataset = FacialKeypointsDataset(args.training_data, args.training_labels, transforms=[rescale, normalize, toTensor])
+training_dataset = FacialKeypointsDataset(args.training_data, args.training_labels, transforms=[rescale, blur, brightness, noise, flip, normalize, toTensor])
 training_dataloader = DataLoader(training_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 4)
 
 # Testing dataset and loader
@@ -180,11 +184,11 @@ for epoch in range(args.epochs):
                     torch.save(model.state_dict(), model_path)
                     print('New test loss low -  trained model saved to {0}'.format(model_path))
 
-                    print('Epoch: {}, Batch: {}, Avg. Loss: {}, Test Avg. Loss: {}'.format(epoch + 1, batch_i+1, running_loss/1000, test_loss))
+                print('Epoch: {}, Batch: {}, Avg. Loss: {}, Test Avg. Loss: {}'.format(epoch + 1, batch_i+1, running_loss/(batch_i+1), test_loss))
             else:
-                print('Epoch: {}, Batch: {}, Avg. Loss: {}'.format(epoch + 1, batch_i+1, running_loss/1000))
+                print('Epoch: {}, Batch: {}, Avg. Loss: {}'.format(epoch + 1, batch_i+1, running_loss/(batch_i+1)))
             
-            running_loss = 0.0
+        running_loss = 0.0
 
 # Now that we've finished training, run the final model through the accuracy test again
 loss = run_against_test(model)
