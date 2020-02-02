@@ -34,7 +34,7 @@ if args.transformer == "rescale":
 elif args.transformer == "crop":
     transformer = transforms.RandomCrop((50, 50))
 elif args.transformer == "rotation":
-    transformer = transforms.RandomRotation(90, image_shape)
+    transformer = transforms.RandomRotation(90)
 elif args.transformer == "blur":
     transformer = transforms.RandomBlur()
 elif args.transformer == "brightness":
