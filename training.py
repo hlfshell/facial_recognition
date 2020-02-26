@@ -27,6 +27,7 @@ import os
 import datetime
 import torch
 from torch.utils.data import DataLoader
+import sys
 
 from dataset import FacialKeypointsDataset
 import transforms
@@ -44,6 +45,7 @@ parser.add_argument("--test_labels", help = "the file location of the test label
 parser.add_argument("--learning_rate", help = "the learning rate to use while training", default = 0.001)
 parser.add_argument("--batch_size", help = "the training batch size", default = 20, type = int)
 parser.add_argument("--epochs", help = "the number of epochs to train for", default = 5, type = int)
+parser.add_argument("--criterion", help = "the loss function used to calculate loss", required = True)
 
 parser.add_argument("--output_dir", help = "the desired directory to save models to", default = os.getcwd())
 
@@ -90,7 +92,14 @@ model.train()
 
 # Create our optimizer and criterion for training
 optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
-criterion = torch.nn.SmoothL1Loss()
+
+if args.criterion == "smooth-l1":
+    criterion = torch.nn.SmoothL1Loss()
+elif args.criterion == "mse":
+    criterion = torch.nn.MSELoss()
+else:
+    print("Criterion '{}' not recongized".format(args.criterion))
+    sys.exit()
 
 # run_against_test will be used to periodically 
 # find out how the model is doing generalizing,
