@@ -1,6 +1,6 @@
 FROM anibali/pytorch:cuda-9.1
 
-sudo apt-get install -y libsm6 libxext6
+RUN ["sudo", "apt-get", "install", "-y", "libsm6", "libxext6"]
 
 WORKDIR /facial-recognition
 
