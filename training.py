@@ -147,8 +147,12 @@ def run_against_model(model, images, keypoints):
     keypoints = keypoints.view(keypoints.size(0), -1)
 
     # Convert variables to floats for regression loss
-    keypoints = keypoints.type(torch.FloatTensor)
-    images = images.type(torch.FloatTensor)
+    if torch.cuda.is_available():
+        keypoints = keypoints.type(torch.cuda.FloatTensor)
+        images = images.type(torch.cuda.FloatTensor)
+    else:
+        keypoints = keypoints.type(torch.FloatTensor)
+        images = images.type(torch.FloatTensor)
 
     # Perform a forward pass with the model
     output = model(images)
