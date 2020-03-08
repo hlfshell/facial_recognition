@@ -186,3 +186,11 @@ I ended up dropping the idea for the small scale random crop because, again, I d
 All of the transformations came together really easily, save the rotation. I was able to figure it out by looking at the source code for the imutils `rotate_bound` function and adjusting it.
 
 With the transformations done, it's now time to focus my energy on fixing CUDA on my GPU-equipped desktop, write out an execution tester for trained models (given an image, apply and draw keypoints, etc), and improve the trainer. If I can get the GPU equipped computer, I'll probably test many configurations in a single script.
+
+---
+
+My GPU capable computer requires a heavy amount of work to get running. In the meantime, I set up a google cloud account and setup a cloud VM with an NVIDIA Tesla K80. Should be about as powerful as GTX1070.
+
+---
+
+Next on the agenda is creating a single image inference function - given an image, execute it. I'll still be needing the scaling, normalization, and to-tensor transformations to execute on the image however. I got the execution to occur (and keypoints to output) but I'll have to overhaul some of the organization in the transformations to prevent repeating code, and make them work on either an image and a keypoint or just an image.
