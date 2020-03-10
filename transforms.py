@@ -74,7 +74,6 @@ class Rescale(object):
 
         return { "image": resized_image, "keypoints": resized_keypoints }
 
-
 # RandomCrop transform 
 # Randomly crops an image
 class RandomCrop(object):
@@ -254,3 +253,49 @@ class ToTensor(object):
         image = image.transpose((2, 0, 1))
 
         return { "image": torch.from_numpy(image), "keypoints": torch.from_numpy(keypoints) }
+
+
+### Image only transforms (for inference)
+
+
+
+class ToTensorImage(object):
+
+    def __call__(self, image):
+        # If the image has no grayscale channel, add one
+        if len(image.shape) == 2:
+            image = image.reshape(image.shape[0], image.shape[1], 1)
+
+        #Swap color axis. Numpy is the opposite of torch
+        # numpy images: H x W x C
+        # torch images: C X H X W
+        image = image.transpose((2, 0, 1))
+
+        return torch.from_numpy(image)
+
+class RescaleImage(object):
+
+    # Set the desired output size for the rescale
+    def __init__(self, output_size):
+        self.output_size = output_size
+
+    def __call__(self, image):
+        resized_image = cv2.resize(image, self.output_size)
+        return resized_image
+
+class NormalizeImage(object):
+
+    def __call__(self, image):
+        # create copies of the image and keypoint labels
+        # to work with
+        image = np.copy(image)
+
+        # Convert to grayscale
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+        # Since grayscale is 0-255, we'll set it to
+        # 0-1.0 by dividing by 255.0 (the .0 specifies
+        # to python we want a float)
+        image = image / 255.0
+
+        return image
