@@ -194,3 +194,11 @@ My GPU capable computer requires a heavy amount of work to get running. In the m
 ---
 
 Next on the agenda is creating a single image inference function - given an image, execute it. I'll still be needing the scaling, normalization, and to-tensor transformations to execute on the image however. I got the execution to occur (and keypoints to output) but I'll have to overhaul some of the organization in the transformations to prevent repeating code, and make them work on either an image and a keypoint or just an image.
+
+---
+
+I created an inference function on the model iself - so you can just call it there. I think I have the keypoints being set up correctly once coming out of the model's forward pass - or at least I think I do. Either I have the functionality right and the model is not even close to being trained (likely, I think) or my model is fine and I have a bug in showing the keypoints. At the moment I suspect it's the model so I'll work with that assumption for now.
+
+I also created a tester cli script in test-image.py. I'll probably make some modifications of it later.
+
+For now, I'm going to experiment training without dropout to try and get overfitting in the model to prove I have a decent setup and am heading in the right direction with the training setup I have.
