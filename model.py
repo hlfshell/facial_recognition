@@ -2,6 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+from torchvision import transforms
+from transforms import RescaleImage, NormalizeImage, ToTensorImage
+import math
+import numpy as np
 
 '''
 
@@ -48,7 +52,13 @@ class FacialNetwork(nn.Module):
     def __init__(self):
         # Start with calling the super for built in functionalit
         super(FacialNetwork, self).__init__()
+        
+        self.image_shape = (224, 224)
+        self.build_network()
+        self.prepare_for_inference()
 
+        
+    def build_network(self):
         # Here we'll create most of the layers, and construct it
         # within the forward() function. I'll try and keep clear
         # the sizes of convolutional / linear layers
@@ -116,6 +126,11 @@ class FacialNetwork(nn.Module):
         # Finally, the dense output layer
         self.output_layer = nn.Linear(in_features = 400, out_features = 136)
 
+    def prepare_for_inference(self):
+        rescale = RescaleImage(self.image_shape)
+        normalize = NormalizeImage()
+        tensor = ToTensorImage()
+        self.transformer = transforms.Compose([rescale, normalize, tensor])
 
     def forward(self, x):
         
@@ -160,3 +175,36 @@ class FacialNetwork(nn.Module):
         x = self.output_layer(x)
 
         return x
+
+    def inference(self, image):
+        # Copy the image to prevent transforming the original
+        image = np.copy(image)
+        image = self.transformer(image)
+        images = image.view(1, 1, self.image_shape[0], self.image_shape[1])
+
+        # Check for CUDA
+        if torch.cuda.is_available():
+            images = images.type(torch.cuda.FloatTensor)
+        else:
+            images = images.type(torch.FloatTensor)
+
+        # Forward pass
+        output = self(images)
+
+        # Generate the keypoints from the give nvalues
+        coords = []
+        coord = None
+        output = output[0].detach().numpy()
+
+        for index, value in enumerate(list(output)):
+            # Denormalize!
+            value = math.floor((value * 50) + 100)
+
+            if index % 2 == 0 :
+                coord = value
+            else :
+                coord = [coord, value]
+                coords.append(coord)
+                coord = None
+        
+        return coords
