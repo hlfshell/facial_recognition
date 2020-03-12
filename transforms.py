@@ -204,11 +204,11 @@ class RandomNoise(object):
 
         salt = np.ceil(noise_amount * image.size * salt_vs_pepper)
         coords = [np.random.randint(0, i - 1, int(salt)) for i in image.shape]
-        out[coords] = 255
+        out[tuple(coords)] = 255
 
         pepper = np.ceil(noise_amount * image.size * (1 - salt_vs_pepper))
         coords = [np.random.randint(0, i- 1, int(pepper)) for i in image.shape]
-        out[coords] = 0
+        out[tuple(coords)] = 0
 
         return { "image": out, "keypoints": item["keypoints"] }
 
